@@ -20,7 +20,7 @@ def cmakeExt():
 
 
 def filterPreset(presetName):
-    winPresetFilter = ['win','switch','crosscompile','android']
+    winPresetFilter = ['win','switch','crosscompile','android', 'emscripten']
     if sys.platform == 'win32':        
         if any(presetName.find(elem) != -1 for elem in winPresetFilter):
             return True
@@ -122,6 +122,8 @@ class CMakePreset:
         elif self.targetPlatform == 'linuxAarch64':
             return False
         elif self.targetPlatform == 'android':
+            return False
+        elif self.targetPlatform == 'emscripten':
             return False
         return True
 
@@ -254,6 +256,11 @@ class CMakePreset:
             outString = outString + ' -DCMAKE_OSX_SYSROOT=iphoneos'
             outString = outString + ' -DPX_OUTPUT_ARCH=arm'
             return outString
+        elif self.targetPlatform == 'emscripten':
+            outString = outString + ' -DTARGET_BUILD_PLATFORM=emscripten'
+            outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=\"' + \
+                os.path.join(os.environ['EMSCRIPTEN'] + '/cmake/Modules/Platform/Emscripten.cmake\"')
+            return outString
         return ''
 
 
@@ -287,6 +294,8 @@ def presetProvided(pName):
 
     if os.environ.get('PM_cmake_PATH') is not None:
         cmakeExec = os.environ['PM_cmake_PATH'] + '/bin/cmake' + cmakeExt()
+    elif parsedPreset.targetPlatform == "emscripten":
+        cmakeExec = 'emcmake cmake' + cmakeExt()
     else:
         cmakeExec = 'cmake' + cmakeExt()
     print('Cmake: ' + cmakeExec)
