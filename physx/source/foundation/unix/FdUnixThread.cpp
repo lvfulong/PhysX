@@ -281,6 +281,8 @@ void PxThreadImpl::yieldProcessor()
 {
 #if (PX_ARM || PX_A64)
 	__asm__ __volatile__("yield");
+#elif PX_EMSCRIPTEN
+		// not supported
 #else
 	__asm__ __volatile__("pause");
 #endif
