@@ -10,5 +10,7 @@ cd ../../../
 mkdir wasm_build
 cd wasm_build
 ln -sf ../physx/source/physxwebbindings/src/PxWebBindings.cpp .
-cp ../physx/bin/emscripten/release/physx.release.js . 
-cp ../physx/bin/emscripten/release/physx.release.wasm .
+cp ../physx/bin/UNKNOWN/release/physx.release.js . 
+#cp ../physx/bin/emscripten/release/physx.release.js . 
+cp ../physx/bin/UNKNOWN/release/physx.release.wasm .
+#cp ../physx/bin/emscripten/release/physx.release.wasm .
