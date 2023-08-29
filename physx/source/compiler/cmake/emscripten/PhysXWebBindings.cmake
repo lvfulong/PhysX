@@ -71,7 +71,7 @@ SET(CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
 
 SET(PHYSX_WEB_BINDINGS_SOURCE
 		${LL_SOURCE_DIR}/PxWebBindings.cpp
-		${LL_SOURCE_DIR}/SimulationFilterShader.cpp
+		#${LL_SOURCE_DIR}/SimulationFilterShader.cpp
 )
 SOURCE_GROUP(src FILES ${PHYSX_WEB_BINDINGS_SOURCE})
 

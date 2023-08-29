@@ -4,18 +4,18 @@
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
-#include <PsSocket.h>
+//#include <PsSocket.h>
 
 #include <chrono>
 
-#include "binding/ActorBinding.h"
-#include "binding/ControllerBinding.h"
-#include "binding/CookingBinding.h"
-#include "binding/JointBinding.h"
-#include "binding/MathBinding.h"
-#include "binding/PVDBinding.h"
-#include "binding/SceneBinding.h"
-#include "binding/ShapeBinding.h"
+//#include "binding/ActorBinding.h"
+//#include "binding/ControllerBinding.h"
+//#include "binding/CookingBinding.h"
+//#include "binding/JointBinding.h"
+//#include "binding/MathBinding.h"
+//#include "binding/PVDBinding.h"
+///#include "binding/SceneBinding.h"
+//#include "binding/ShapeBinding.h"
 #include "PxPhysicsAPI.h"
 
 using namespace physx;
@@ -24,24 +24,24 @@ using namespace emscripten;
 //----------------------------------------------------------------------------------------------------------------------
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
-    class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
+    //class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
 
     // Global functions
     // These are generally system/scene level initialization
-    function("PxCreateFoundation", &PxCreateFoundation, allow_raw_pointers());
-    function("PxInitExtensions", &PxInitExtensions, allow_raw_pointers());
-    function("PxCloseExtensions", &PxCloseExtensions, allow_raw_pointers());
-    function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
-    function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
+    //function("PxCreateFoundation", &PxCreateFoundation, allow_raw_pointers());
+    //function("PxInitExtensions", &PxInitExtensions, allow_raw_pointers());
+    //function("PxCloseExtensions", &PxCloseExtensions, allow_raw_pointers());
+    //function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
+    //function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
 
-    class_<PxAllocatorCallback>("PxAllocatorCallback");
-    class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
-    class_<PxTolerancesScale>("PxTolerancesScale")
-            .constructor<>()
-            .property("speed", &PxTolerancesScale::speed)
-            .property("length", &PxTolerancesScale::length);
+    //class_<PxAllocatorCallback>("PxAllocatorCallback");
+    //class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
+    //class_<PxTolerancesScale>("PxTolerancesScale")
+    //        .constructor<>()
+    //        .property("speed", &PxTolerancesScale::speed)
+    //        .property("length", &PxTolerancesScale::length);
 
-    class_<PxFoundation>("PxFoundation").function("release", &PxFoundation::release);
+    //class_<PxFoundation>("PxFoundation").function("release", &PxFoundation::release);
 
     /** PhysXPhysics ✅ */
     class_<PxPhysics>("PxPhysics")
