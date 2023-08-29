@@ -20,7 +20,7 @@ def cmakeExt():
 
 
 def filterPreset(presetName):
-    winPresetFilter = ['win','switch','crosscompile','android', 'emscripten']
+    winPresetFilter = ['win','switch','crosscompile','android']
     if sys.platform == 'win32':        
         if any(presetName.find(elem) != -1 for elem in winPresetFilter):
             return True
@@ -261,8 +261,7 @@ class CMakePreset:
             return outString
         elif self.targetPlatform == 'emscripten':
             outString = outString + ' -DTARGET_BUILD_PLATFORM=emscripten'
-            outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=\"' + \
-                os.path.join(os.environ['EMSCRIPTEN'] + '/cmake/Modules/Platform/Emscripten.cmake\"')
+            outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake '
             return outString
         return ''
 
