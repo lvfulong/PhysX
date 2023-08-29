@@ -122,7 +122,7 @@ class PxTransformV
 		return PxTransformV(V3Add(QuatRotate(q, src.p), p), QuatMul(q, src.q));
 	}
 
-#if PX_LINUX && PX_CLANG
+#if PX_LINUX && PX_CLANG || PX_IOS
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wbitwise-instead-of-logical" // bitwise intentionally chosen for performance
 #endif

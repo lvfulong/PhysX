@@ -97,7 +97,7 @@ PxU32 getBinaryPlatformTag()
 	return sBinaryPlatformTags[8];
 #elif PX_ANDROID
 	return sBinaryPlatformTags[9];
-#elif PX_IOS && PX_A64
+#elif PX_IOS && (PX_A64 || PX_X64)
 	return sBinaryPlatformTags[10];
 #elif PX_OSX && PX_A64
 	return sBinaryPlatformTags[11];

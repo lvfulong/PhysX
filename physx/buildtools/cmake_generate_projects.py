@@ -249,12 +249,15 @@ class CMakePreset:
             outString = outString + ' -DPX_OUTPUT_ARCH=arm'
             return outString
         elif self.targetPlatform == 'ios64':
-            outString = outString + ' -DTARGET_BUILD_PLATFORM=ios'
-            outString = outString + ' -DCMAKE_SYSTEM_NAME=iOS'
-            outString = outString + ' -DCMAKE_SYSTEM_VERSION=1'
-            outString = outString + ' -DCMAKE_OSX_ARCHITECTURES=arm64'
-            outString = outString + ' -DCMAKE_OSX_SYSROOT=iphoneos'
+            outString = outString + ' -DPLATFORM_NAME=iphoneos'
+            outString = outString + ' -DIOS_ARCH=arm64'
             outString = outString + ' -DPX_OUTPUT_ARCH=arm'
+            #outString = outString + ' -DPLATFORM_NAME=iphonesimulator'
+            #outString = outString + ' -DIOS_ARCH=x86_64'
+            #outString = outString + ' -DPX_OUTPUT_ARCH=x86_64'
+            outString = outString + ' -DTARGET_BUILD_PLATFORM=ios'
+            outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=\"' + \
+                os.environ['PHYSX_ROOT_DIR'] + '/../ios.toolchain.cmake\"'
             return outString
         elif self.targetPlatform == 'emscripten':
             outString = outString + ' -DTARGET_BUILD_PLATFORM=emscripten'

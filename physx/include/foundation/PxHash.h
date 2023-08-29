@@ -85,11 +85,13 @@ PX_FORCE_INLINE uint32_t PxComputeHash(const uint64_t key)
 	k ^= (k >> 31);
 	return uint32_t(UINT32_MAX & k);
 }
-
+#if !PX_P64_FAMILY
 PX_FORCE_INLINE uint32_t PxComputeHash(const unsigned long key)
 {
 	return PxComputeHash(uint64_t(key));
 }
+#endif
+
 #if PX_APPLE_FAMILY
 // hash for size_t, to make gcc happy
 PX_INLINE uint32_t PxComputeHash(const size_t key)
