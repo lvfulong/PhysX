@@ -24,24 +24,34 @@ using namespace emscripten;
 //----------------------------------------------------------------------------------------------------------------------
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
-    //class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
-
+    //pvd
+    #if PX_DEBUG || PX_PROFILE || PX_CHECKED
+    function("PxCreatePvd",&PxCreatePvd,allow_raw_pointers());
+    function("PxDefaultPvdSocketTransportCreate",&PxDefaultPvdSocketTransportCreate,allow_raw_pointers());
+    class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
+    class_<PxPvdTransport>("PxPvdTransport");
+    enum_<PxPvdInstrumentationFlag::Enum>("PxPvdInstrumentationFlag")
+        .value("eDEBUG",PxPvdInstrumentationFlag::Enum::eDEBUG)
+        .value("ePROFILE",PxPvdInstrumentationFlag::Enum::ePROFILE)
+        .value("eMEMORY",PxPvdInstrumentationFlag::Enum::eMEMORY)
+        .value("eALL",PxPvdInstrumentationFlag::Enum::eALL);
+    #endif
     // Global functions
     // These are generally system/scene level initialization
-    //function("PxCreateFoundation", &PxCreateFoundation, allow_raw_pointers());
-    //function("PxInitExtensions", &PxInitExtensions, allow_raw_pointers());
-    //function("PxCloseExtensions", &PxCloseExtensions, allow_raw_pointers());
-    //function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
-    //function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
+    function("PxCreateFoundation", &PxCreateFoundation, allow_raw_pointers());
+    function("PxInitExtensions", &PxInitExtensions,allow_raw_pointers());
+    function("PxCloseExtensions", &PxCloseExtensions);
+    function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
+    function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
+    
+    class_<PxAllocatorCallback>("PxAllocatorCallback");
+    class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
+    class_<PxTolerancesScale>("PxTolerancesScale")
+            .constructor<>()
+            .property("speed", &PxTolerancesScale::speed)
+            .property("length", &PxTolerancesScale::length);
 
-    //class_<PxAllocatorCallback>("PxAllocatorCallback");
-    //class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
-    //class_<PxTolerancesScale>("PxTolerancesScale")
-    //        .constructor<>()
-    //        .property("speed", &PxTolerancesScale::speed)
-    //        .property("length", &PxTolerancesScale::length);
-
-    //class_<PxFoundation>("PxFoundation").function("release", &PxFoundation::release);
+    class_<PxFoundation>("PxFoundation").function("release", &PxFoundation::release);
 
     /** PhysXPhysics ✅ */
     class_<PxPhysics>("PxPhysics")
@@ -132,10 +142,18 @@ void raw_destructor<PxFoundation>(PxFoundation *) { /* do nothing */
 template <>
 void raw_destructor<PxBVHStructure>(PxBVHStructure *) { /* do nothing */
 }
-
+#if PX_DEBUG || PX_PROFILE || PX_CHECKED
 template <>
 void raw_destructor<PxPvd>(PxPvd *) { /* do nothing */
 }
 
+template <>
+void raw_destructor<PxPvdTransport>(PxPvdTransport *) { /* do nothing */
+}
+
+template <>
+void raw_destructor<PxPvdSceneClient>(PxPvdSceneClient *) { /* do nothing */
+}
+#endif
 }  // namespace internal
 }  // namespace emscripten
