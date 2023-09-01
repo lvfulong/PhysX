@@ -43,9 +43,9 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
             .function("getAngularDamping", &PxRigidBody::getAngularDamping)
             .function("setLinearDamping", &PxRigidBody::setLinearDamping)  // ✅
             .function("getLinearDamping", &PxRigidBody::getLinearDamping)
-            .function("setAngularVelocity", &PxRigidBody::setAngularVelocity)  // ✅
+
             .function("getAngularVelocity", &PxRigidBody::getAngularVelocity)
-            .function("setLinearVelocity", &PxRigidBody::setLinearVelocity)  // ✅
+    
             .function("getLinearVelocity", &PxRigidBody::getLinearVelocity)
             .function("setMaxAngularVelocity", &PxRigidBody::setMaxAngularVelocity)  // ✅
             .function("getMaxAngularVelocity", &PxRigidBody::getMaxAngularVelocity)
@@ -116,7 +116,9 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
             .function("setRigidDynamicLockFlag", &PxRigidDynamic::setRigidDynamicLockFlag)
             .function("setRigidDynamicLockFlags", optional_override([](PxRigidDynamic &body, int flags) {
                           return body.setRigidDynamicLockFlags(PxRigidDynamicLockFlags(flags));
-                      }));  // ✅
+                      }))  // ✅
+            .function("setAngularVelocity", &PxRigidDynamic::setAngularVelocity)  // ✅
+            .function("setLinearVelocity", &PxRigidDynamic::setLinearVelocity);  // ✅
     class_<PxRigidBodyFlags>("PxRigidBodyFlags");
     enum_<PxRigidBodyFlag::Enum>("PxRigidBodyFlag")
             .value("eKINEMATIC", PxRigidBodyFlag::Enum::eKINEMATIC)

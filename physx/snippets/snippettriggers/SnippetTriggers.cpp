@@ -72,7 +72,7 @@ static ScenarioData gData[SCENARIO_COUNT] = {
 	{FILTER_CALLBACK,	false,	true},
 };
 
-static PxU32 gScenario = 0;
+static PxU32 gScenario = 6;
 
 static PX_FORCE_INLINE	TriggerImpl	getImpl()				{ return gData[gScenario].mImpl;			}
 static PX_FORCE_INLINE	bool		usesCCD()				{ return gData[gScenario].mCCD;				}

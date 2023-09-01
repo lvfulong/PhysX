@@ -8,20 +8,28 @@
 
 #include <chrono>
 
-//#include "binding/ActorBinding.h"
+#include "binding/ActorBinding.h"
 //#include "binding/ControllerBinding.h"
 //#include "binding/CookingBinding.h"
 //#include "binding/JointBinding.h"
-//#include "binding/MathBinding.h"
+#include "binding/MathBinding.h"
 //#include "binding/PVDBinding.h"
-///#include "binding/SceneBinding.h"
-//#include "binding/ShapeBinding.h"
+#include "binding/SceneBinding.h"
+#include "binding/ShapeBinding.h"
 #include "PxPhysicsAPI.h"
 
 using namespace physx;
 using namespace emscripten;
 
 //----------------------------------------------------------------------------------------------------------------------
+PxPhysics* CreateDefaultPhysics(PxFoundation &fun, PxTolerancesScale &scale){
+        return PxCreatePhysics(PX_PHYSICS_VERSION,fun,scale,false,NULL,NULL);
+}
+bool InitDefaultExtensions(PxPhysics &physics){
+        return PxInitExtensions(physics,NULL);
+}
+        
+
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
     //pvd
@@ -43,7 +51,8 @@ EMSCRIPTEN_BINDINGS(physx) {
     function("PxCloseExtensions", &PxCloseExtensions);
     function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
     function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
-    
+    function("CreateDefaultPhysics",&CreateDefaultPhysics,allow_raw_pointers());
+    function("InitDefaultExtensions",&InitDefaultExtensions);
     class_<PxAllocatorCallback>("PxAllocatorCallback");
     class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
     class_<PxTolerancesScale>("PxTolerancesScale")
