@@ -259,6 +259,14 @@ class CMakePreset:
             outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=\"' + \
                 os.environ['PHYSX_ROOT_DIR'] + '/../ios.toolchain.cmake\"'
             return outString
+        elif self.targetPlatform == 'iosx86_64':
+            outString = outString + ' -DPLATFORM_NAME=iphonesimulator'
+            outString = outString + ' -DIOS_ARCH=x86_64'
+            outString = outString + ' -DPX_OUTPUT_ARCH=x86_64'
+            outString = outString + ' -DTARGET_BUILD_PLATFORM=ios'
+            outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=\"' + \
+                os.environ['PHYSX_ROOT_DIR'] + '/../ios.toolchain.cmake\"'
+            return outString
         elif self.targetPlatform == 'emscripten':
             outString = outString + ' -DTARGET_BUILD_PLATFORM=emscripten'
             outString = outString + ' -DCMAKE_TOOLCHAIN_FILE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake '
