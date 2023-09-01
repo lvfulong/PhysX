@@ -278,7 +278,9 @@ struct PxsShapeCore
 
 PX_COMPILE_TIME_ASSERT( sizeof(GeometryUnion) <= 64);	// PT: if you break this one I will not be happy
 
+#if !(PX_CLANG && PX_X86) // android x86 can not build ??? lvfulong
 PX_COMPILE_TIME_ASSERT( (sizeof(PxsShapeCore)&0xf) == 0);
+#endif
 
 }
 

@@ -20,7 +20,7 @@ def cmakeExt():
 
 
 def filterPreset(presetName):
-    winPresetFilter = ['win','switch','crosscompile','android']
+    winPresetFilter = ['win','switch','crosscompile']
     if sys.platform == 'win32':        
         if any(presetName.find(elem) != -1 for elem in winPresetFilter):
             return True
@@ -165,7 +165,7 @@ class CMakePreset:
         elif self.compiler == 'xcode':
             outString = outString + '-G Xcode'
         elif self.targetPlatform == 'android':
-            outString = outString + '-G \"MinGW Makefiles\"'
+            outString = outString + '-G \"Unix Makefiles\"'
         elif self.targetPlatform == 'linux':
             outString = outString + '-G \"Unix Makefiles\"'
         elif self.targetPlatform == 'linuxAarch64':
@@ -208,8 +208,8 @@ class CMakePreset:
                 outString = outString + ' -DCM_ANDROID_FP=\"softfp\"'
                 outString = outString + ' -DANDROID_NDK=' + \
                     os.environ['ANDROID_NDK_HOME']
-                outString = outString + ' -DCMAKE_MAKE_PROGRAM=\"' + \
-                    os.environ['ANDROID_NDK_HOME'] + '\\prebuilt\\windows-x86_64\\bin\\make.exe\"'
+                #outString = outString + ' -DCMAKE_MAKE_PROGRAM=\"' + \
+                 #   os.environ['ANDROID_NDK_HOME'] + '\\prebuilt\\windows-x86_64\\bin\\make.exe\"'
             return outString
         elif self.targetPlatform == 'linux':
             outString = outString + ' -DTARGET_BUILD_PLATFORM=linux'
