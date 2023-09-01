@@ -62,7 +62,7 @@ PxSceneDesc *getDefaultSceneDesc(PxTolerancesScale &scale, int numThreads, PxSim
     auto *sceneDesc = new PxSceneDesc(scale);
     sceneDesc->gravity = PxVec3(0.0f, -9.81f, 0.0f);
     sceneDesc->cpuDispatcher = PxDefaultCpuDispatcherCreate(numThreads);
-    sceneDesc->filterShader = physx::simulationFilterShader;
+    sceneDesc->filterShader = PxDefaultSimulationFilterShader;
     sceneDesc->simulationEventCallback = callback;
     return sceneDesc;
 }
@@ -81,7 +81,6 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             .value("eENABLE_ACTIVE_ACTORS ", PxSceneFlag::Enum::eENABLE_ACTIVE_ACTORS)
             .value("eENABLE_CCD", PxSceneFlag::Enum::eENABLE_CCD)
             .value("eDISABLE_CCD_RESWEEP", PxSceneFlag::Enum::eDISABLE_CCD_RESWEEP)
-            .value("eADAPTIVE_FORCE", PxSceneFlag::Enum::eADAPTIVE_FORCE)
             .value("eENABLE_PCM", PxSceneFlag::Enum::eENABLE_PCM)
             .value("eDISABLE_CONTACT_REPORT_BUFFER_RESIZE", PxSceneFlag::Enum::eDISABLE_CONTACT_REPORT_BUFFER_RESIZE)
             .value("eDISABLE_CONTACT_CACHE", PxSceneFlag::Enum::eDISABLE_CONTACT_CACHE)
@@ -89,8 +88,15 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             .value("eENABLE_STABILIZATION", PxSceneFlag::Enum::eENABLE_STABILIZATION)
             .value("eENABLE_AVERAGE_POINT", PxSceneFlag::Enum::eENABLE_AVERAGE_POINT)
             .value("eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS", PxSceneFlag::Enum::eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS)
+            .value("eENABLE_GPU_DYNAMICS", PxSceneFlag::Enum::eENABLE_GPU_DYNAMICS)
             .value("eENABLE_ENHANCED_DETERMINISM", PxSceneFlag::Enum::eENABLE_ENHANCED_DETERMINISM)
-            .value("eENABLE_FRICTION_EVERY_ITERATION", PxSceneFlag::Enum::eENABLE_FRICTION_EVERY_ITERATION);
+            .value("eENABLE_FRICTION_EVERY_ITERATION", PxSceneFlag::Enum::eENABLE_FRICTION_EVERY_ITERATION)
+            .value("eSUPPRESS_READBACK", PxSceneFlag::Enum::eSUPPRESS_READBACK)
+            .value("eFORCE_READBACK", PxSceneFlag::Enum::eFORCE_READBACK)
+            .value("eMUTABLE_FLAGS", PxSceneFlag::Enum::eMUTABLE_FLAGS);
+
+            
+
 
     /** PhysXPhysicsManager ✅ */
     class_<PxScene>("PxScene")
