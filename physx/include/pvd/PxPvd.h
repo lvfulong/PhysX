@@ -96,6 +96,7 @@ struct PxPvdInstrumentationFlag
 
 		eALL     = (eDEBUG | ePROFILE | eMEMORY)
 	};
+
 };
 
 /**

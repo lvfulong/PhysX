@@ -62,6 +62,39 @@ static PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geo
 	return dynamic;
 }
 
+struct UserCallback : PxRaycastCallback
+{
+	//UserData data;
+
+	virtual PxAgain processTouches(const PxRaycastHit* buffer, PxU32 nbHits)
+		// This callback can be issued multiple times and can be used
+		// to process an unbounded number of touching hits.
+		// Each reported touching hit in buffer is guaranteed to be closer than
+		// the final block hit after the query has fully executed.
+	{
+		/*for (PxU32 i = 0; i < nbHits; i++)
+			animateLeaves(buffer[i], data);*/
+	}
+	virtual void finalizeQuery()
+	{
+		//drawWallDecal(this->block, data);
+	}
+};
+
+class customPxQueryFilterCallback :public PxQueryFilterCallback {
+	virtual PxQueryHitType::Enum preFilter(
+		const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) {
+	}
+};
+
+
+static void raycastTest(const PxTransform& t, const PxVec3& velocity = PxVec3(0)) {
+	/*UserCallback cb;
+	cb.data*/
+	
+	//gScene->raycast(t.p, velocity.getNormalized(), 1000, 0, PxHitFlag::eDEFAULT, PxQueryFilterCallback);
+}
+
 static void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
 {
 	PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
@@ -171,8 +204,9 @@ void keyPress(unsigned char key, const PxTransform& camera)
 {
 	switch(toupper(key))
 	{
-	case 'B':	createStack(PxTransform(PxVec3(0,0,stackZ-=10.0f)), 10, 2.0f);						break;
-	case ' ':	createDynamic(camera, PxSphereGeometry(3.0f), camera.rotate(PxVec3(0,0,-1))*200);	break;
+		case 'B':	createStack(PxTransform(PxVec3(0,0,stackZ-=10.0f)), 10, 2.0f);						break;
+		case ' ':	createDynamic(camera, PxSphereGeometry(3.0f), camera.rotate(PxVec3(0,0,-1))*200);	break;
+		case 'R': raycastTest(camera, camera.rotate(PxVec3(0, 0, -1))); break;
 	}
 }
 

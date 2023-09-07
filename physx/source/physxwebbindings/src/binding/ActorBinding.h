@@ -23,7 +23,16 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
     enum_<PxActorFlag::Enum>("PxActorFlag").value("eDISABLE_GRAVITY", PxActorFlag::Enum::eDISABLE_GRAVITY);
 
     /** PhysXCollider ✅ */
-    class_<PxActor>("PxActor").function("setActorFlag", &PxActor::setActorFlag).function("release", &PxActor::release);
+    class_<PxActor>("PxActor").function("setActorFlag", &PxActor::setActorFlag)
+    .function("release", &PxActor::release)
+    .function("setUUID", optional_override([](PxActor &actor, uint32_t uuid) {
+                          auto ptr = malloc(sizeof(uint32_t));
+                          memcpy(ptr, &uuid, sizeof(uint32_t));
+                          actor.userData = ptr;
+            }))
+    .function("getUUID", optional_override([](PxActor &actor) {
+                    return getActorUUID(&actor);
+            }));
     class_<PxRigidActor, base<PxActor>>("PxRigidActor")
             .function("attachShape", &PxRigidActor::attachShape)                            // ✅
             .function("detachShape", &PxRigidActor::detachShape)                            // ✅

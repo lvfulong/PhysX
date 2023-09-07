@@ -22,20 +22,31 @@ using namespace physx;
 using namespace emscripten;
 
 //----------------------------------------------------------------------------------------------------------------------
+#define PVD_HOST "127.0.0.1"	
+
 PxPhysics* CreateDefaultPhysics(PxFoundation &fun, PxTolerancesScale &scale){
         return PxCreatePhysics(PX_PHYSICS_VERSION,fun,scale,false,NULL,NULL);
 }
 bool InitDefaultExtensions(PxPhysics &physics){
         return PxInitExtensions(physics,NULL);
 }
-        
+
+#if PX_DEBUG || PX_PROFILE || PX_CHECKED
+//PxPvdTransport* CreatepvdTransport(int port, unsigned int timeoutInMilliseconds,PxPvd* pvd, PxPvdInstrumentationFlags flags){        
+bool CreatepvdTransport(int port, unsigned int timeoutInMilliseconds,PxPvd* pvd){        
+        PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, port, timeoutInMilliseconds);
+        return pvd->connect(*transport,PxPvdInstrumentationFlag::eALL);  
+}       
+#endif
+ 
 
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
+//    constant("PVD_HOST", PVD_HOST);
     //pvd
     #if PX_DEBUG || PX_PROFILE || PX_CHECKED
     function("PxCreatePvd",&PxCreatePvd,allow_raw_pointers());
-    function("PxDefaultPvdSocketTransportCreate",&PxDefaultPvdSocketTransportCreate,allow_raw_pointers());
+    function("CreatepvdTransport",&CreatepvdTransport,allow_raw_pointers());
     class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
     class_<PxPvdTransport>("PxPvdTransport");
     enum_<PxPvdInstrumentationFlag::Enum>("PxPvdInstrumentationFlag")
@@ -131,7 +142,6 @@ EMSCRIPTEN_BINDINGS(physx) {
     class_<PxBaseTask>("PxBaseTask");
     class_<PxDefaultCpuDispatcher, base<PxCpuDispatcher>>("PxDefaultCpuDispatcher");
 
-    class_<PxFilterData>("PxFilterData");
     class_<PxPairFlags>("PxPairFlags");
     class_<PxFilterFlags>("PxFilterFlags");
     enum_<PxPairFlag::Enum>("PxPairFlag");

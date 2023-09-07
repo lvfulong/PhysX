@@ -48,11 +48,12 @@ EMSCRIPTEN_BINDINGS(physx_shape) {
             .function("setFlags", &PxShape::setFlags)
             .function("setLocalPose", &PxShape::setLocalPose)
             .function("setGeometry", &PxShape::setGeometry)
-            .function("getBoxGeometry", &PxShape::getBoxGeometry, allow_raw_pointers())
-            .function("getSphereGeometry", &PxShape::getSphereGeometry, allow_raw_pointers())
-            .function("getPlaneGeometry", &PxShape::getPlaneGeometry, allow_raw_pointers())
-            .function("getCapsuleGeometry", &PxShape::getCapsuleGeometry, allow_raw_pointers())
+        //     .function("getBoxGeometry", &PxShape::getBoxGeometry, allow_raw_pointers())
+        //     .function("getSphereGeometry", &PxShape::getSphereGeometry, allow_raw_pointers())
+        //     .function("getPlaneGeometry", &PxShape::getPlaneGeometry, allow_raw_pointers())
+        //     .function("getCapsuleGeometry", &PxShape::getCapsuleGeometry, allow_raw_pointers())
             .function("setSimulationFilterData", &PxShape::setSimulationFilterData, allow_raw_pointers())
+            .function("setQueryFilterData",&PxShape::setQueryFilterData,allow_raw_pointers())
             .function("setMaterials", optional_override([](PxShape &shape, std::vector<PxMaterial *> materials) {
                           return shape.setMaterials(materials.data(), materials.size());
                       }))
