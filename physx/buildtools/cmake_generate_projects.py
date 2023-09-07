@@ -125,6 +125,10 @@ class CMakePreset:
             return False
         elif self.targetPlatform == 'emscripten':
             return False
+        elif self.targetPlatform == 'ios64':
+            return False
+        elif self.targetPlatform == 'iosx86_64':
+            return False
         return True
 
     def getCMakeSwitches(self):
