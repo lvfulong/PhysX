@@ -27,6 +27,11 @@ using namespace emscripten;
 PxPhysics* CreateDefaultPhysics(PxFoundation &fun, PxTolerancesScale &scale){
         return PxCreatePhysics(PX_PHYSICS_VERSION,fun,scale,false,NULL,NULL);
 }
+
+PxPhysics* CreatePVDPhysics(PxFoundation &fun, PxTolerancesScale &scale,bool trackOutstandingAllocations,PxPvd* pvd){
+        return PxCreatePhysics(PX_PHYSICS_VERSION,fun,scale,trackOutstandingAllocations,pvd,NULL);
+}
+
 bool InitDefaultExtensions(PxPhysics &physics){
         return PxInitExtensions(physics,NULL);
 }
@@ -38,7 +43,7 @@ bool CreatepvdTransport(int port, unsigned int timeoutInMilliseconds,PxPvd* pvd)
         return pvd->connect(*transport,PxPvdInstrumentationFlag::eALL);  
 }       
 #endif
- 
+
 
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
@@ -61,8 +66,9 @@ EMSCRIPTEN_BINDINGS(physx) {
     function("PxInitExtensions", &PxInitExtensions,allow_raw_pointers());
     function("PxCloseExtensions", &PxCloseExtensions);
     function("PxDefaultCpuDispatcherCreate", &PxDefaultCpuDispatcherCreate, allow_raw_pointers());
-    function("PxCreatePhysics", &PxCreateBasePhysics, allow_raw_pointers());
+    //function("PxCreatePhysics",optional_override([]()), allow_raw_pointers());
     function("CreateDefaultPhysics",&CreateDefaultPhysics,allow_raw_pointers());
+    function("CreatePVDPhysics",&CreatePVDPhysics,allow_raw_pointers());
     function("InitDefaultExtensions",&InitDefaultExtensions);
     class_<PxAllocatorCallback>("PxAllocatorCallback");
     class_<PxDefaultAllocator, base<PxAllocatorCallback>>("PxDefaultAllocator").constructor<>();
