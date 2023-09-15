@@ -266,7 +266,7 @@ PxTriangleMesh* TriangleMeshesCookTest(PxTolerancesScale scale) {
 
 	PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 	return gPhysics->createTriangleMesh(readBuffer);
-	PxTriangleMeshGeometry()
+	PxTriangleMeshGeometry();
 }
 
 

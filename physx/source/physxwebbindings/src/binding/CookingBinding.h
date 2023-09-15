@@ -115,7 +115,9 @@ PxHeightField* createHeightField(int numRows,int numCols,
 
 EMSCRIPTEN_BINDINGS(physx_cooking) {
     function("PxCreateCooking", &PxCreateCooking, allow_raw_pointers());
-
+    function("createConvexMeshFromBuffer",&createConvexMeshFromBuffer,allow_raw_pointers());
+    function("createHeightField",&createHeightField,allow_raw_pointers());
+    function("createTriMesh",&createHeightField,allow_raw_pointers());
     class_<PxMeshScale>("PxMeshScale").constructor<const PxVec3 &, const PxQuat &>();
     //triangleMesh
     class_<PxTriangleMesh>("PxTriangleMesh").function("release", &PxTriangleMesh::release);
