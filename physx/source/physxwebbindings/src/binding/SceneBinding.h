@@ -270,6 +270,12 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             .function("setVisualizationCullingBox", &PxScene::setVisualizationCullingBox)
             .function("collide",
                       optional_override([](PxScene &scene, PxReal elapsedTime) { scene.collide(elapsedTime); }))
+            .function("setPVDClient",optional_override([](PxScene &scene) { 
+                PxPvdSceneClient* pvdClient = scene.getScenePvdClient();
+                if(pvdClient){
+                    pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+                }
+            }))
             .function("fetchCollision", &PxScene::fetchCollision)
             .function("advance", optional_override([](PxScene &scene) { scene.advance(); }))
             .function("fetchResults", optional_override([](PxScene &scene, bool block) {
@@ -312,7 +318,7 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             //               return PxSceneQueryExt::sweepAny(scene, geometry, pose, unitDir, distance, queryFlags, hit);
             //           }))
             // .function("sweepSingle",
-            //           optional_override([](const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose,
+            //           optional_override([](const PxScene &scene, const PxGeometry &\, const PxTransform &pose,
             //                                const PxVec3 &unitDir, const PxReal distance, PxSceneQueryFlags outputFlags,
             //                                PxSweepHit &hit) {
             //               return PxSceneQueryExt::sweepSingle(scene, geometry, pose, unitDir, distance, outputFlags,
