@@ -35,6 +35,7 @@
 #include <ctype.h>
 #include "PxPhysicsAPI.h"
 #include "../snippetutils/SnippetUtils.h"
+#include "../../source/lowlevel/common/include/utils/PxcScratchAllocator.h"
 
 using namespace physx;
 
@@ -168,4 +169,141 @@ int snippetMain(int, const char*const*)
 	cleanupPhysics();
 
 	return 0;
+}
+
+
+static const PxVec3 convexVerts[] = { PxVec3(0,1,0),PxVec3(1,0,0),PxVec3(-1,0,0),PxVec3(0,0,1),PxVec3(0,0,-1) };
+
+void* testCreateConvex(PxRigidActor& aConvexActor,PxMaterial& aMaterial) {
+	//创建描述
+	PxConvexMeshDesc convexDesc;
+	convexDesc.points.count = 5;
+	convexDesc.points.stride = sizeof(PxVec3);
+	convexDesc.points.data = convexVerts;
+	convexDesc.flags = PxConvexFlag::eCOMPUTE_CONVEX;
+	//range 4-255
+	//如果使用PxConverxFlag:：eCHECK_ZERO_AREA_TRIANGLES，则算法不包括面积小于PxCookingParams:：areaTestEpsilon的三角形。如果算法找不到4个没有小三角形的初始顶点，则返回PxConverxMeshCookingResult:：eZERO_AREA_TEST_FAILED。这意味着提供的顶点位于非常小的区域内，炊具无法生成有效的外壳。为了获得凸网烹饪的鲁棒策略，在烹饪失败的情况下可以使用AABB或OBB。
+	//如果提供了大量的输入顶点，量化输入顶点可能会很有用，在这种情况下，使用PxConverxFlag:：eQUANTIZE_input并设置所需的PxConvexMeshDesc:：quantizedCount。
+	convexDesc.vertexLimit = 10;
+	//cooking成
+	PxTolerancesScale scale;
+	PxCookingParams params(scale);
+	PxDefaultMemoryOutputStream buf;
+	PxConvexMeshCookingResult::Enum result;
+	if (!PxCookConvexMesh(params, convexDesc, buf, &result))
+		return NULL;
+	PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
+	PxConvexMesh* convexMesh = gPhysics->createConvexMesh(input);
+
+	PxRigidActorExt::createExclusiveShape(aConvexActor,
+		PxConvexMeshGeometry(convexMesh), aMaterial);
+	return NULL;
+	
+}
+
+void testFast_INERTIA_COMPUTATION(PxRigidActor& aConvexActor, PxMaterial& aMaterial) {
+	PxConvexMeshDesc convexDesc;
+	convexDesc.points.count = 5;
+	convexDesc.points.stride = sizeof(PxVec3);
+	convexDesc.points.data = convexVerts;
+	convexDesc.flags = PxConvexFlag::eCOMPUTE_CONVEX | PxConvexFlag::eDISABLE_MESH_VALIDATION | PxConvexFlag::eFAST_INERTIA_COMPUTATION;
+	
+	PxTolerancesScale scale;
+	PxCookingParams cookingParams(scale);
+#ifdef _DEBUG
+	// mesh should be validated before cooking without the mesh cleaning
+	//请注意，调试和检查的构建需要网格验证，因为从未验证的输入描述符创建网格可能会导致未定义的行为
+	//卷集成将使用SIMD代码路径，该路径的计算速度更快，但精度更低。
+	//凸面网格不支持负比例。
+	bool res = PxValidateConvexMesh(cookingParams, convexDesc);
+	PX_ASSERT(res);
+#endif
+
+	PxConvexMesh* aConvexMesh = PxCreateConvexMesh(cookingParams, convexDesc,
+		gPhysics->getPhysicsInsertionCallback());
+
+	PxConvexMeshGeometry geometry = PxConvexMeshGeometry(aConvexMesh);
+	geometry.meshFlags = PxConvexMeshGeometryFlag::Enum::eTIGHT_BOUNDS;//这个更紧实，但是计算成本更高，但当许多凸对象相互作用时，可以提高模拟性能。
+
+	PxRigidActorExt::createExclusiveShape(aConvexActor, geometry, aMaterial);
+}
+
+
+
+
+//Triangle Meshes
+//在PxCookingParams中：
+//scale defines用于检查三角形是否不太大。此检查将有助于提高模拟稳定性。
+//suppressTriangleMeshRemapTable 指定是否创建面重映射表。如果没有，这将节省大量内存，但SDK将无法提供有关碰撞、扫描或光线投射命中中哪个原始网格三角形的信息。
+//buildTriangleAdjacencies指定是否创建三角形邻接信息。可以使用getTriangle检索给定三角形的相邻三角形。
+//meshPreprocessParams指定网格预处理参数。
+	//PxMeshPreprocessingFlag:：eWELD_VERTICES可在三角形网格烹饪过程中启用顶点焊接。
+			//PxMeshPreprocessingFlag:：eDISABLE_CLEAN_MESH禁用网格清理过程。不搜索顶点的双面性，不进行巨大三角形测试。未完成顶点焊接。确实加快了烹饪速度。
+			//PxMeshPreprocessingFlag:：eDISABLE_ACTIVE_EDGES_PRECOMPUTE禁用顶点边预计算。使烹饪更快，但会减缓接触的产生。
+//meshWeldTolerance-如果启用了网格焊接，则控制焊接顶点的距离。如果未启用网格焊接，则该值定义网格验证的接受距离。如果此距离内没有两个顶点，则认为网格是干净的。否则，将发出警告。为了获得最佳性能，需要有一个干净的筛网。
+//midphaseDesc指定所需的中间阶段加速度结构描述符。
+		//PxBVH33MidphaseDsc-PxMeshMidPhase:：eBVH33是在PhysX 3.3之前的旧版本中使用的。它具有良好的性能，所有平台都支持它。
+		//PxBVH34MidphaseDsc - PxMeshMidPhase:：eBVH34是PhysX 3.4中引入的一个重新访问的实现，目前它是默认结构。它在烹饪性能和运行时性能方面都可以明显更快，但目前仅在支持SSE2指令集的平台上可用。
+PxTriangleMesh* TriangleMeshesCookTest(PxTolerancesScale scale) {
+	PxTriangleMeshDesc meshDesc;
+	meshDesc.points.count = 5;
+	meshDesc.points.stride = sizeof(PxVec3);
+	meshDesc.points.data = convexVerts;
+
+	PxU32 indices32[12];
+	meshDesc.triangles.count = 4;
+	meshDesc.triangles.stride = 3 * sizeof(PxU32);
+	meshDesc.triangles.data = indices32;
+	
+	PxTolerancesScale scale;
+	PxCookingParams params(scale);
+
+	PxDefaultMemoryOutputStream writeBuffer;
+	PxTriangleMeshCookingResult::Enum result;
+	bool status = PxCookTriangleMesh(params, meshDesc, writeBuffer, &result);
+	if (!status)
+		return NULL;
+
+	PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+	return gPhysics->createTriangleMesh(readBuffer);
+	PxTriangleMeshGeometry()
+}
+
+
+//HeightFields
+//Rowscale  Columnscale
+//Sample[0]-sample[N]是顶点
+//行 - X轴
+//列 - Z轴
+//高度 - Y轴
+//顾名思义，地形可以通过规则矩形采样网格上的高度值来描述：
+void testHeightFields(int* heightData) {
+	int numRows = 4;
+	int numCols = 4;
+	int heightScale = 1;
+	int rowScale = 1;
+	int colScale = 1;
+	PxHeightFieldSample* samples = (PxHeightFieldSample*)gAllocator.allocate(sizeof(PxHeightFieldSample) *(numRows * numCols),0,0,0);
+	for (int i = 0, n = numRows * numCols; i < n; i++) {
+		samples[i].height = heightData[i];
+	}
+	
+	PxHeightFieldDesc hfDesc;
+	hfDesc.format = PxHeightFieldFormat::eS16_TM;
+	hfDesc.nbColumns = numCols;
+	hfDesc.nbRows = numRows;
+	hfDesc.samples.data = samples;
+	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
+
+	PxHeightField* aHeightField = PxCreateHeightField(hfDesc,
+		gPhysics->getPhysicsInsertionCallback());
+
+	PxHeightFieldGeometry hfGeom(aHeightField, PxMeshGeometryFlags(), heightScale, rowScale,
+		colScale);
+	//PxShape* aHeightFieldShape = PxRigidActorExt::createExclusiveShape(*aHeightFieldActor,
+	//	hfGeom, aMaterialArray, nbMaterials);
+
+	//localScaledVertex = PxVec3(row * rowScale, PxF32(heightSample) * heightScale,
+	//	col * columnScale)
+	//	worldVertex = shapeTransform(localScaledVertex)
 }
