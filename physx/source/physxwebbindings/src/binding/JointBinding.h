@@ -108,12 +108,10 @@ EMSCRIPTEN_BINDINGS(physx_joint) {
                           PxJointLinearLimitPair limit = PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping));
                           limit.restitution = bounceness;
                           limit.bounceThreshold = bounceThreshold;
-                          joint.setLinearLimit(
-                                  PxD6Axis::Enum(axis),limit
-                                  ));
+                          joint.setLinearLimit(PxD6Axis::Enum(axis),limit);
                       }))  // ✅
             .function("setTwistLimit",
-                      optional_override([](PxD6Joint &joint, PxReal lowerLimit, PxReal upperLimit, ,PxReal bounceness,PxReal bounceThreshold, PxReal stiffness ,PxReal damping) {
+                      optional_override([](PxD6Joint &joint, PxReal lowerLimit, PxReal upperLimit,PxReal bounceness,PxReal bounceThreshold, PxReal stiffness ,PxReal damping) {
                           
                           PxJointAngularLimitPair limit = PxJointAngularLimitPair(lowerLimit, upperLimit, -1.0f);
                           limit.restitution = bounceness;
@@ -126,9 +124,8 @@ EMSCRIPTEN_BINDINGS(physx_joint) {
                       optional_override([](PxD6Joint &joint,PxReal yAngle,PxReal zAngle,PxReal bounceness,PxReal bounceThreshold,PxReal spring,PxReal damping) {
                           PxJointLimitCone limit = PxJointLimitCone(yAngle,zAngle,-1.0f);
                           limit.restitution = bounceness;
-                          limit.restitution = bounceness;
                           limit.bounceThreshold = bounceThreshold;
-                          limit.stiffness = stiffness;
+                          limit.stiffness = spring;
                           limit.damping = damping;
                           joint.setSwingLimit(limit);
                       }))  // ✅
@@ -145,10 +142,10 @@ EMSCRIPTEN_BINDINGS(physx_joint) {
             //               joint.setPyramidSwingLimit(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin,
             //                                                              zLimitAngleMax, PxSpring(stiffness, damping)));
             //           }))  // ✅
-            .function("setDrive", optional_override([](PxD6Joint &joint,PxReal stiffness,PxReal damping,PxReal forceLimit,PxReal flag) {
+            .function("setDrive", optional_override([](PxD6Joint &joint,int index,PxReal stiffness,PxReal damping,PxReal forceLimit,PxReal flag) {
                         PxD6JointDrive limit = PxD6JointDrive();
                         limit.forceLimit = forceLimit;
-                        limit.flags = flag;
+                        limit.flags = PxD6JointDriveFlag::Enum(flag);
                         limit.stiffness = stiffness;
                         limit.damping = damping;
                         joint.setDrive(PxD6Drive::Enum(index),limit);

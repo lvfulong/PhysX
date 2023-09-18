@@ -21,8 +21,8 @@ PxConvexMesh *createConvexMeshFromBuffer(PxVec3* vertices, PxU32 vertCount, PxPh
     convexDesc.points.count = vertCount;
     convexDesc.points.stride = sizeof(PxVec3);
     convexDesc.points.data = vertices;
-    convexDesc.flags = PxConvexFlag::Enum(ConvexFlags)
-	convexDesc.vertexLimit = vertexLimit;
+    convexDesc.flags = PxConvexFlag::Enum(ConvexFlags);
+	convexDesc.vertexLimit = VetexLimit;
     PxCookingParams params(scale);
 	PxDefaultMemoryOutputStream buf;
 	PxConvexMeshCookingResult::Enum result;
@@ -64,12 +64,12 @@ PxTriangleMesh *createTriMesh(PxVec3* vertices,
 		return NULL;
 
     PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-    return gPhysphysicsics->createTriangleMesh(readBuffer);;
+    return physics.createTriangleMesh(readBuffer);
 }
 
 PxHeightField* createHeightField(int numRows,int numCols,
                                 int* heightData,
-                              PxDefaultAllocator &gAllocator
+                              PxDefaultAllocator &gAllocator,
                               PxTolerancesScale &scale,
                               PxPhysics &physics
 ){
@@ -85,7 +85,7 @@ PxHeightField* createHeightField(int numRows,int numCols,
     hfDesc.samples.data = samples;
     hfDesc.samples.stride = sizeof(PxHeightFieldSample);
     PxHeightField* aHeightField = PxCreateHeightField(hfDesc,
-		gPhysics->getPhysicsInsertionCallback());
+		physics.getPhysicsInsertionCallback());
     return aHeightField;
 }
 
@@ -102,7 +102,7 @@ EMSCRIPTEN_BINDINGS(physx_cooking) {
             .property("scale",&PxTriangleMeshGeometry::scale),
     class_<PxMeshGeometryFlags>("PxMeshGeometryFlags").constructor<int>();
     enum_<PxMeshGeometryFlag::Enum>("PxMeshGeometryFlag")
-            .value("eDOUBLE_SIDED",PxMeshGeometryFlag::Enum::eTIGHT_BOUNDS);
+            .value("eTIGHT_BOUNDS",PxMeshGeometryFlag::Enum::eTIGHT_BOUNDS)
             .value("eDOUBLE_SIDED", PxMeshGeometryFlag::Enum::eDOUBLE_SIDED);
     //ConvexMesh
     class_<PxConvexMesh>("PxConvexMesh").function("release", &PxConvexMesh::release);
@@ -114,7 +114,14 @@ EMSCRIPTEN_BINDINGS(physx_cooking) {
             .value("eTIGHT_BOUNDS", PxConvexMeshGeometryFlag::Enum::eTIGHT_BOUNDS);
 
     //heightField
-    class_<PxHeightField>("PxHeightField").function("release",&PxHeightField.release);
+    class_<PxHeightField>("PxHeightField")
+            .function("release",&PxHeightField::release)
+            // TODO.function("modifySamples",&PxHeightField::modifySamples)
+            .function("getNbRows",&PxHeightField::getNbRows)
+            .function("getNbColumns",&PxHeightField::getNbColumns)
+            .function("getFormat",&PxHeightField::getFormat)
+            .function("getHeight",&PxHeightField::getHeight);
+    
     class_<PxHeightFieldGeometry>("PxHeightFieldGeometry").constructor<PxHeightField*,	PxMeshGeometryFlags ,PxReal ,PxReal ,PxReal >();
     // class_<PxCooking>("PxCooking")
     //         .function("createConvexMeshWithIndices",
@@ -141,8 +148,8 @@ EMSCRIPTEN_BINDINGS(physx_cooking) {
 namespace emscripten {
 namespace internal {
 template <>
-// void raw_destructor<PxCooking>(PxCooking *) { /* do nothing */
-// }
+void raw_destructor<PxHeightField>(PxHeightField *) { /* do nothing */
+}
 
 template <>
 void raw_destructor<PxConvexMesh>(PxConvexMesh *) { /* do nothing */

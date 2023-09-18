@@ -162,16 +162,17 @@ struct ContactReportCallback : public wrapper<PxSimulationEventCallback>
 			if (current.events & PxPairFlag::eNOTIFY_TOUCH_LOST){
                 lostContact.push_back(partInfo);
             }
-			if(contactPoints.size()>0){
-                  call<void>("onContactBegin",startContact);
-            }
-            if(persistsContact.size()>0){
-                  call<void>("onContactPersist",persistsContact);
-            }
-            if(lostContact.size()>0){
-                  call<void>("onContactEnd",lostContact);
-            }
+		
 		}
+        if(contactPoints.size()>0){
+                call<void>("onContactBegin",startContact);
+        }
+        if(persistsContact.size()>0){
+                call<void>("onContactPersist",persistsContact);
+        }
+        if(lostContact.size()>0){
+                call<void>("onContactEnd",lostContact);
+        }
 	}
 };
 
