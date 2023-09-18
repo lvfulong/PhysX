@@ -9,9 +9,9 @@
 #include <chrono>
 
 #include "binding/ActorBinding.h"
-//#include "binding/ControllerBinding.h"
-//#include "binding/CookingBinding.h"
-//#include "binding/JointBinding.h"
+#include "binding/ControllerBinding.h"
+#include "binding/CookingBinding.h"
+#include "binding/JointBinding.h"
 #include "binding/MathBinding.h"
 //#include "binding/PVDBinding.h"
 #include "binding/SceneBinding.h"
