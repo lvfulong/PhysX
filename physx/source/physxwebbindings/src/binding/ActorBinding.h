@@ -35,7 +35,11 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
             }))
     .function("getUUID", optional_override([](PxActor &actor) {
                     return getActorUUID(&actor);
+            }))
+    .function("setCustomFlag", optional_override([](PxActor &actor, int flag,bool value) {
+                          actor.setActorFlag(PxActorFlag::Enum(flag),value);
             }));
+
     class_<PxRigidActor, base<PxActor>>("PxRigidActor")
             .function("attachShape", &PxRigidActor::attachShape)                            // ✅
             .function("detachShape", &PxRigidActor::detachShape)                            // ✅
