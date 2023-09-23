@@ -29,7 +29,15 @@ EMSCRIPTEN_BINDINGS(physx_joint) {
             .function("setInvInertiaScale0", &PxJoint::setInvInertiaScale0)  // ✅
             .function("setInvMassScale1", &PxJoint::setInvMassScale1)        // ✅
             .function("setInvInertiaScale1", &PxJoint::setInvInertiaScale1)  // ✅
-            .function("release", &PxJoint::release);
+            .function("release", &PxJoint::release)
+            .function("setUUID", optional_override([](PxJoint &joint, uint32_t uuid) {
+                          auto ptr = malloc(sizeof(uint32_t));
+                          memcpy(ptr, &uuid, sizeof(uint32_t));
+                          joint.userData = ptr;
+            }))
+            .function("getUUID", optional_override([](PxJoint &joint) {
+                    return getJointUUID(&joint);
+            }));
     /* PhysXFixedJoint ✅ */
     class_<PxFixedJoint, base<PxJoint>>("PxFixedJoint")
             .function("setProjectionLinearTolerance", &PxFixedJoint::setProjectionLinearTolerance)     // ✅

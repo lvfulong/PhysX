@@ -21,3 +21,11 @@ inline uint32_t getActorUUID(physx::PxActor* actor) {
 inline uint32_t getActorUUID(const physx::PxActor* actor) {
     return *static_cast<uint32_t*>(actor->userData);
 }
+
+inline uint32_t getJointUUID(physx::PxJoint* joint) {
+    return *static_cast<uint32_t*>(joint->userData);
+}
+
+inline uint32_t getJointUUID(const physx::PxJoint* joint) {
+    return *static_cast<uint32_t*>(joint->userData);
+}

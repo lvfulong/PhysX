@@ -20,7 +20,10 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
             .value("eVELOCITY_CHANGE", PxForceMode::Enum::eVELOCITY_CHANGE)
             .value("eACCELERATION", PxForceMode::Enum::eACCELERATION);
 
-    enum_<PxActorFlag::Enum>("PxActorFlag").value("eDISABLE_GRAVITY", PxActorFlag::Enum::eDISABLE_GRAVITY);
+    enum_<PxActorFlag::Enum>("PxActorFlag").value("eDISABLE_GRAVITY", PxActorFlag::Enum::eDISABLE_GRAVITY)
+                                           .value("eVISUALIZATION", PxActorFlag::Enum::eVISUALIZATION)
+                                           .value("eSEND_SLEEP_NOTIFIES", PxActorFlag::Enum::eSEND_SLEEP_NOTIFIES)
+                                           .value("eDISABLE_SIMULATION", PxActorFlag::Enum::eDISABLE_SIMULATION);
 
     /** PhysXCollider ✅ */
     class_<PxActor>("PxActor").function("setActorFlag", &PxActor::setActorFlag)
@@ -32,7 +35,11 @@ EMSCRIPTEN_BINDINGS(physx_actor) {
             }))
     .function("getUUID", optional_override([](PxActor &actor) {
                     return getActorUUID(&actor);
+            }))
+    .function("setCustomFlag", optional_override([](PxActor &actor, int flag,bool value) {
+                          actor.setActorFlag(PxActorFlag::Enum(flag),value);
             }));
+
     class_<PxRigidActor, base<PxActor>>("PxRigidActor")
             .function("attachShape", &PxRigidActor::attachShape)                            // ✅
             .function("detachShape", &PxRigidActor::detachShape)                            // ✅

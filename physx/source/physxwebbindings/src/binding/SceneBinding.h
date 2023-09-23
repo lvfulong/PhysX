@@ -65,13 +65,13 @@ struct ContactReportCallback : public wrapper<PxSimulationEventCallback>
 	{
         if(count==0)
             return;
-        std::vector<PxU32> wakeActor;
+        std::vector<int> wakeActor;
         wakeActor.resize(count);
         int index= 0;
         while (count--)
         {
             PxActor* actor = *actors++;
-            wakeActor[index++] = getActorUUID(actor);
+            wakeActor[index++] =int(getActorUUID(actor));
         }
         call<void>("onWake",wakeActor);
         
@@ -79,18 +79,17 @@ struct ContactReportCallback : public wrapper<PxSimulationEventCallback>
 
 	void onSleep(PxActor** actors, PxU32 count) override
 	{
-         if(count==0)
+        if(count==0)
             return;
-        std::vector<PxU32> sleepActor;
+        std::vector<int> sleepActor;
         sleepActor.resize(count);
         int index= 0;
         while (count--)
         {
             PxActor* actor = *actors++;
-           sleepActor[index++] =getActorUUID(actor);
+            sleepActor[index++] = int(getActorUUID(actor));
         }
         call<void>("onSleep",sleepActor);
-        
 	}
 
 	void onTrigger(PxTriggerPair* pairs, PxU32 count) override
