@@ -94,6 +94,7 @@ EMSCRIPTEN_BINDINGS(physx_math) {
         .field("word2",&PxFilterData::word2)
         .field("word3",&PxFilterData::word3);
     register_vector<int>("Vector_Int");
+    register_vector<PxU8>("Vector_Int");
     register_vector<LayaTriggerInfo>("Vector_PxTriggerPair");
     //register_vector<PxActor>("Vector_PxActor");
     register_vector<LayaContactPairInfo>("Vector_PxContactPairInfo");
