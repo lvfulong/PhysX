@@ -118,24 +118,24 @@ EMSCRIPTEN_BINDINGS(physx_cooking)
     .function("release", &PxConvexMesh::release)
     .function("getVertices",optional_override([](PxConvexMesh &convexMesh) {
         PxU32 vertexNumber =convexMesh.getNbVertices();
-        PxVec3*	vertexs =convexMesh.getVertices();
-        vector<PxVec3> vecVertex(vertexs,vertexs+vertexNumber);
+        const PxVec3*	vertexs =convexMesh.getVertices();
+        std::vector<PxVec3> vecVertex(vertexs,vertexs+vertexNumber);
         return vecVertex;
                       }))
     .function("getIndexBuffer",optional_override([](PxConvexMesh &convexMesh) {
-        PxU8* index = convex->getIndexBuffer();
+        const PxU8* index = convexMesh.getIndexBuffer();
 		PxU32 indexBufferSize = sizeof(index) / sizeof(index[0]);
-        vector<PxU8> u8vec(index,index+indexBufferSize);
+        std::vector<PxU8> u8vec(index,index+indexBufferSize);
         return u8vec;
                       }))
     .function("getPolygons",optional_override([](PxConvexMesh &convexMesh) {
         std::vector<int> returnData;
 		PxHullPolygon data;
-		PxU32 polygonsNums = convex->getNbPolygons();
+		PxU32 polygonsNums = convexMesh.getNbPolygons();
 		PxU32 index = 0;
-		if(;index<polygonsNums;index++)
+		for(index=0;index<polygonsNums;index++)
 		{
-			convex->getPolygonData(index, data);
+			convexMesh.getPolygonData(index, data);
 			returnData.push_back(data.mNbVerts);
 			returnData.push_back(data.mIndexBase);
 		}

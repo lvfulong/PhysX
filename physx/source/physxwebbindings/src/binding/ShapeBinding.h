@@ -23,7 +23,9 @@ EMSCRIPTEN_BINDINGS(physx_shape) {
             .value("eMAX", PxCombineMode::Enum::eMAX)
             .value("eMULTIPLY", PxCombineMode::Enum::eMULTIPLY);
     class_<PxMaterial>("PxMaterial")
-            .function("release", &PxMaterial::release)
+            .function("release", optional_override([](PxMaterial &material){
+                material.release();
+            })
             .function("setDynamicFriction", &PxMaterial::setDynamicFriction)
             .function("setStaticFriction", &PxMaterial::setStaticFriction)
             .function("setRestitution", &PxMaterial::setRestitution)
