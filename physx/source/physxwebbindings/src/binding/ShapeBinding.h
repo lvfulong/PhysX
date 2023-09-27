@@ -25,7 +25,7 @@ EMSCRIPTEN_BINDINGS(physx_shape) {
     class_<PxMaterial>("PxMaterial")
             .function("release", optional_override([](PxMaterial &material){
                 material.release();
-            })
+            }))
             .function("setDynamicFriction", &PxMaterial::setDynamicFriction)
             .function("setStaticFriction", &PxMaterial::setStaticFriction)
             .function("setRestitution", &PxMaterial::setRestitution)
