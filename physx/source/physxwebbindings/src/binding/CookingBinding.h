@@ -124,7 +124,18 @@ EMSCRIPTEN_BINDINGS(physx_cooking)
                       }))
     .function("getIndexBuffer",optional_override([](PxConvexMesh &convexMesh) {
         const PxU8* index = convexMesh.getIndexBuffer();
-		PxU32 indexBufferSize = sizeof(index) / sizeof(index[0]);
+		PxU32 indexBufferSize = 0;
+        const PxU32 nbPolys = convexMesh.getNbPolygons();
+        for(PxU32 i = 0; i < nbPolys; i++)
+        {
+            PxHullPolygon data;
+            convexMesh.getPolygonData(i, data);
+            const PxU32 offlength = PxU32(data.mIndexBase+data.mNbVerts);
+            if(indexBufferSize<offlength){
+                indexBufferSize = offlength;
+            }
+        }
+        printf("getIndexBuffer Size:%d\n",indexBufferSize);
         std::vector<PxU8> u8vec(index,index+indexBufferSize);
         return u8vec;
                       }))
@@ -136,8 +147,8 @@ EMSCRIPTEN_BINDINGS(physx_cooking)
 		for(index=0;index<polygonsNums;index++)
 		{
 			convexMesh.getPolygonData(index, data);
-			returnData.push_back(data.mNbVerts);
-			returnData.push_back(data.mIndexBase);
+			returnData.push_back(int(data.mNbVerts));
+			returnData.push_back(int(data.mIndexBase));
 		}
         return returnData;
                       }));
