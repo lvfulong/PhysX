@@ -13,9 +13,9 @@
 using namespace physx;
 using namespace emscripten;
 
-struct ControllerHitReport : public wrapper<PxUserControllerHitReport>
+class ControllerHitReport : public PxUserControllerHitReport
 {
-        EMSCRIPTEN_WRAPPER(explicit ControllerHitReport)
+        //EMSCRIPTEN_WRAPPER(explicit ControllerHitReport)
 	/**
 	 Called when current controller hits a shape.
 
@@ -26,27 +26,28 @@ struct ControllerHitReport : public wrapper<PxUserControllerHitReport>
 	@see PxControllerShapeHit
 	*/
 	void onShapeHit(const PxControllerShapeHit& hit){
-	        PxRigidActor* actor = hit.actor;
+	        PxRigidBody* actor = hit.actor->is<PxRigidBody>();
                 if(actor)
                 {
-                        if(actor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
-                                return;
-		const PxVec3 upVector = hit.controller->getUpDirection();
-		const PxF32 dp = hit.dir.dot(upVector);
-                const PxTransform globalPose = actor->getGlobalPose();
-                const PxVec3 localPos = globalPose.transformInv(hit.worldPos);
-                addLocalForceAtPos(*actor, hit.dir*1000.0f, localPos, PxForceMode::eACCELERATION,true);
+                        //if(actor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
+                        //         return;
+                        // const PxVec3 upVector = hit.controller->getUpDirection();
+                        // const PxF32 dp = hit.dir.dot(upVector);
+                        const PxTransform globalPose = actor->getGlobalPose();
+                        const PxVec3 localPos = globalPose.transformInv(toVec3(hit.worldPos));
+                        physx::PxRigidBodyExt::addLocalForceAtPos(*actor, hit.dir*1000.0f, localPos, PxForceMode::eACCELERATION,true);
 	        }
         }
 
-	/**
-	
-	*/
-	void onControllerHit(const PxControllersHit& hit){
+        void onControllerHit(const PxControllersHit& hit){
 
         }
 
-}
+        void onObstacleHit(const PxControllerObstacleHit& hit){
+
+        }
+
+};
 
 
 
@@ -94,6 +95,11 @@ EMSCRIPTEN_BINDINGS(physx_controller) {
             .property("density", &PxControllerDesc::density)                          // ✅
             .property("scaleCoeff", &PxControllerDesc::scaleCoeff)                    // ✅
             .property("volumeGrowth", &PxControllerDesc::volumeGrowth)                // ✅
+            .function("setreportCallBackBehavior",optional_override([](PxControllerDesc &desc) {
+                          desc.reportCallback = new ControllerHitReport();
+                      }))  // ✅
+            //.property("reportCallback",&PxControllerDesc::reportCallback, allow_raw_pointers())
+            //.property("behaviorCallback",&PxControllerDesc::behaviorCallback,, allow_raw_pointers())
             .function("setNonWalkableMode", optional_override([](PxControllerDesc &desc, int mode) {
                           return desc.nonWalkableMode = PxControllerNonWalkableMode::Enum(mode);
                       }))  // ✅
@@ -117,12 +123,12 @@ EMSCRIPTEN_BINDINGS(physx_controller) {
             .function("setToDefault", &PxBoxControllerDesc::setToDefault)            // ✅
             .property("halfForwardExtent", &PxBoxControllerDesc::halfForwardExtent)  // ✅
             .property("halfHeight", &PxBoxControllerDesc::halfHeight)                // ✅
-            .property("halfSideExtent", &PxBoxControllerDesc::halfSideExtent)
-            .property("reportCallback",&PxBoxControllerDesc::reportCallback);     // ✅
+            .property("halfSideExtent", &PxBoxControllerDesc::halfSideExtent);
+            //.property("reportCallback",&PxBoxControllerDesc::reportCallback);     // ✅
 
     /** PhysXCharacterController ✅ */
-     class_<PxUserControllerHitReport>("PxUserControllerHitReport")
-            .allow_subclass<ControllerHitReport>("ControllerHitReport");
+//      class_<PxUserControllerHitReport>("PxUserControllerHitReport")
+//             .allow_subclass<ControllerHitReport>("ControllerHitReport");
     class_<PxController>("PxController")
             .function("release", optional_override([](PxController &ctrl) {
                           PxRigidDynamic *actor = ctrl.getActor();
