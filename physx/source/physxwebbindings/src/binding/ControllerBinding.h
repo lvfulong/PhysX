@@ -13,6 +13,12 @@
 using namespace physx;
 using namespace emscripten;
 
+struct controllerUserData{
+        public:
+         uint32_t uuid;
+         PxF32 pushforce;
+};
+
 class ControllerHitReport : public PxUserControllerHitReport
 {
         //EMSCRIPTEN_WRAPPER(explicit ControllerHitReport)
@@ -35,7 +41,8 @@ class ControllerHitReport : public PxUserControllerHitReport
                         // const PxF32 dp = hit.dir.dot(upVector);
                         const PxTransform globalPose = actor->getGlobalPose();
                         const PxVec3 localPos = globalPose.transformInv(toVec3(hit.worldPos));
-                        physx::PxRigidBodyExt::addLocalForceAtPos(*actor, hit.dir*1000.0f, localPos, PxForceMode::eACCELERATION,true);
+                        controllerUserData* data = (controllerUserData*)hit.controller->getUserData();
+                        physx::PxRigidBodyExt::addLocalForceAtPos(*actor, hit.dir*hit.length*data->pushforce, localPos, PxForceMode::eFORCE,true);
 	        }
         }
 
@@ -180,14 +187,16 @@ EMSCRIPTEN_BINDINGS(physx_controller) {
                           static_cast<PxBoxController *>(&ctrl)->setHalfForwardExtent(height);
                       }))
             .function("setUUID", optional_override([](PxController &ctrl, uint32_t uuid) {
-                          auto ptr = malloc(sizeof(uint32_t));
-                          memcpy(ptr, &uuid, sizeof(uint32_t));
-
-                          PxRigidDynamic *actor = ctrl.getActor();
-                          PxShape *shape;
-                          actor->getShapes(&shape, 1);
-                          shape->userData = ptr;
-                      }));  // ✅
+                        
+                        controllerUserData* userData = new controllerUserData();
+                          userData->uuid = uuid;
+                          userData->pushforce = 1.0f;
+                          ctrl.setUserData(userData);
+                      }))  // ✅
+            .function("setPushForce",optional_override([](PxController &ctrl, PxF32 force) {
+                        controllerUserData* userData = ( controllerUserData*)ctrl.getUserData();
+                        userData->pushforce = force;
+            }));
 }
 
 namespace emscripten {
