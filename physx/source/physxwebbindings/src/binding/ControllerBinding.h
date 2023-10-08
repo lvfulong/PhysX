@@ -108,10 +108,10 @@ EMSCRIPTEN_BINDINGS(physx_controller) {
             //.property("reportCallback",&PxControllerDesc::reportCallback, allow_raw_pointers())
             //.property("behaviorCallback",&PxControllerDesc::behaviorCallback,, allow_raw_pointers())
             .function("setNonWalkableMode", optional_override([](PxControllerDesc &desc, int mode) {
-                          return desc.nonWalkableMode = PxControllerNonWalkableMode::Enum(mode);
+                           desc.nonWalkableMode = PxControllerNonWalkableMode::Enum(mode);
                       }))  // ✅
             .function("setMaterial", optional_override([](PxControllerDesc &desc, PxMaterial *material) {
-                          return desc.material = material;
+                           desc.material = material;
                       }),
                       allow_raw_pointers())                                                      // ✅
             .property("registerDeletionListener", &PxControllerDesc::registerDeletionListener);  // ✅
