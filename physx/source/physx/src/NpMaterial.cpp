@@ -142,7 +142,7 @@ void NpMaterial::setRestitution(PxReal x)
 	if ((!(mMaterial.flags & PxMaterialFlag::eCOMPLIANT_CONTACT) && x < 0.0f) || (x > 1.0f))
 	{
 		PxClamp(x, 0.0f, 1.0f);
-		PxGetFoundation().error(PxErrorCode::eINVALID_PARAMETER, __FILE__, __LINE__, "PxMaterial::setRestitution: Invalid value %f was clamped to [0,1]!", PxF64(x));
+		//PxGetFoundation().error(PxErrorCode::eINVALID_PARAMETER, __FILE__, __LINE__, "PxMaterial::setRestitution: Invalid value %f was clamped to [0,1]!", PxF64(x));
 	}
 	mMaterial.restitution = x;
 	updateMaterial();
