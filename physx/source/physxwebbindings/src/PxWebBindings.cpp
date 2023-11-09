@@ -42,8 +42,36 @@ bool CreatepvdTransport(int port, unsigned int timeoutInMilliseconds,PxPvd* pvd)
         PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, port, timeoutInMilliseconds);
         return pvd->connect(*transport,PxPvdInstrumentationFlag::eALL);  
 }       
+
+bool MyCreatepvdTransport(PxPvdTransport* transport,PxPvd* pvd){        
+        return pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+}    
 #endif
 
+
+struct PxPvdTransportWrapper : public wrapper<PxPvdTransport> {
+    EMSCRIPTEN_WRAPPER(PxPvdTransportWrapper)
+
+    void unlock() override {}
+
+    void flush() override {}
+
+    void release() override {}
+
+    PxPvdTransport &lock() override { return *this; }
+
+    uint64_t getWrittenDataSize() override { return 0; }
+
+    bool connect() override { return call<bool>("connect"); }
+
+    void disconnect() override { call<void>("disconnect"); }
+
+    bool isConnected() override { return call<bool>("isConnected"); }
+
+    bool write(const uint8_t *inBytes, uint32_t inLength) override {
+        return call<bool>("write", int(inBytes), int(inLength));
+    }
+};
 
 EMSCRIPTEN_BINDINGS(physx) {
     constant("PX_PHYSICS_VERSION", PX_PHYSICS_VERSION);
@@ -52,8 +80,11 @@ EMSCRIPTEN_BINDINGS(physx) {
     #if PX_DEBUG || PX_PROFILE || PX_CHECKED
     function("PxCreatePvd",&PxCreatePvd,allow_raw_pointers());
     function("CreatepvdTransport",&CreatepvdTransport,allow_raw_pointers());
+    function("MyCreatepvdTransport",&MyCreatepvdTransport,allow_raw_pointers());
     class_<PxPvd>("PxPvd").function("connect", &PxPvd::connect);
-    class_<PxPvdTransport>("PxPvdTransport");
+//     class_<PxPvdTransport>("PxPvdTransport");
+    class_<PxPvdTransport>("PxPvdTransport")
+        .allow_subclass<PxPvdTransportWrapper>("PxPvdTransportWrapper", constructor<>());
     enum_<PxPvdInstrumentationFlag::Enum>("PxPvdInstrumentationFlag")
         .value("eDEBUG",PxPvdInstrumentationFlag::Enum::eDEBUG)
         .value("ePROFILE",PxPvdInstrumentationFlag::Enum::ePROFILE)

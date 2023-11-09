@@ -17,6 +17,7 @@ struct controllerUserData{
         public:
          uint32_t uuid;
          PxF32 pushforce;
+         PxPairFlags eventFilter;
 };
 
 class ControllerHitReport : public PxUserControllerHitReport
@@ -35,13 +36,47 @@ class ControllerHitReport : public PxUserControllerHitReport
 	        PxRigidBody* actor = hit.actor->is<PxRigidBody>();
                 if(actor)
                 {
+                        controllerUserData* data = (controllerUserData*)hit.controller->getUserData();
+
+                        // event dispatch
+                        PxContactPairHeader pairHeader;
+                        PxContactPair* contactPairs = new PxContactPair[1];
+                        pairHeader.actors[0] = hit.controller->getActor();
+                        pairHeader.actors[1] = actor;
+                        
+                        PxShape* controllierShape;
+                        hit.controller->getActor()->getShapes(&controllierShape, 1);
+                        contactPairs[0].shapes[0] = controllierShape;
+                        PxShape* actorShape;
+                        actor->getShapes(&actorShape, 1);
+                        contactPairs[0].shapes[1] = actorShape;
+                        contactPairs[0].contactCount = 1;
+                        contactPairs[0].events = data->eventFilter;
+
+                        // PxContactPoint* contactPoints = new PxContactPoint[1];
+                        // contactPoints[0].normal = hit.worldNormal;
+                        // contactPoints[0].point = hit.worldPos;
+
+                        // PxContactPatch* contactPatchs = new PxContactPatch[1];
+                        // contactPatchs[0].normal = hit.worldNormal;
+
+                        PxU8* points = reinterpret_cast<PxU8*>(1);
+                        PxU8* patches = reinterpret_cast<PxU8*>(1);
+
+
+                        contactPairs[0].contactPoints = points;
+                        contactPairs[0].contactPatches = patches;
+                        pairHeader.pairs = contactPairs;
+
+                        pairHeader.nbPairs = 1;
+                        PxSimulationEventCallback* callback = actor->getScene()->getSimulationEventCallback(); 
+                        callback->onContact(pairHeader, pairHeader.pairs, pairHeader.nbPairs);
                         //if(actor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)
                         //         return;
                         // const PxVec3 upVector = hit.controller->getUpDirection();
                         // const PxF32 dp = hit.dir.dot(upVector);
                         const PxTransform globalPose = actor->getGlobalPose();
                         const PxVec3 localPos = globalPose.transformInv(toVec3(hit.worldPos));
-                        controllerUserData* data = (controllerUserData*)hit.controller->getUserData();
                         physx::PxRigidBodyExt::addLocalForceAtPos(*actor, hit.dir*hit.length*data->pushforce, localPos, PxForceMode::eFORCE,true);
 	        }
         }
@@ -196,6 +231,19 @@ EMSCRIPTEN_BINDINGS(physx_controller) {
             .function("setPushForce",optional_override([](PxController &ctrl, PxF32 force) {
                         controllerUserData* userData = ( controllerUserData*)ctrl.getUserData();
                         userData->pushforce = force;
+            }))
+            .function("setShapeID",optional_override([](PxController &ctrl, uint32_t uuid) {
+                        PxRigidDynamic *actor = ctrl.getActor();
+                        PxShape *shape;
+                        actor->getShapes(&shape, 1);
+                        auto ptr = malloc(sizeof(uint32_t));
+                        memcpy(ptr, &uuid, sizeof(uint32_t));
+                        shape->userData = ptr;
+            }))
+            .function("setEventFilter",optional_override([](PxController &ctrl, PxU16 filter) {
+                        controllerUserData* userData = ( controllerUserData*)ctrl.getUserData();
+                        PxPairFlags flags = PxPairFlags(filter);
+                        userData->eventFilter = flags;
             }));
 }
 
