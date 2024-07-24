@@ -288,12 +288,16 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             .function("simulate", optional_override([](PxScene &scene, PxReal elapsedTime, bool controlSimulation) {
                           scene.simulate(elapsedTime, nullptr, nullptr, 0, controlSimulation);
                       }))  // ✅
-            .function("raycastCloset",optional_override([](PxScene &scene,PxVec3 ori,PxVec3 dir,PxU32 filterGroup){
+            .function("raycastCloset",optional_override([](PxScene &scene,PxVec3 ori,PxVec3 dir,PxU32 distance, PxU32 filterGroup, PxU32 filterMask){
                 LayaQuaryResult quaryResult;
-                raycastClosest(scene,ori,dir,filterGroup,quaryResult);
+                raycastClosest(scene,ori,dir,distance,filterGroup,filterMask,quaryResult);
                 return quaryResult;
-            }
-            ))
+            }))
+            .function("raycastAllHits",optional_override([](PxScene &scene,PxVec3 ori,PxVec3 dir,PxU32 distance,PxU32 filterGroup, PxU32 filterMask){
+                std::vector <LayaQuaryResult> quaryResults;
+                raycastAllHits(scene,ori,dir,distance,filterGroup,filterMask,quaryResults);
+                return quaryResults;
+            }))
             // .function("raycast", &PxScene::raycast, allow_raw_pointers())
             // .function("raycastAny", optional_override([](const PxScene &scene, const PxVec3 &origin,
             //                                              const PxVec3 &unitDir, const PxReal distance) {
@@ -310,20 +314,23 @@ EMSCRIPTEN_BINDINGS(physx_scene) {
             //                                                     callback);
             //           }),
             //           allow_raw_pointers())  // ✅
-            // .function("sweep", &PxScene::sweep, allow_raw_pointers())
-            // .function("sweepAny",
-            //           optional_override([](const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose,
-            //                                const PxVec3 &unitDir, const PxReal distance, PxSceneQueryFlags queryFlags) {
-            //               PxSweepHit hit;
-            //               return PxSceneQueryExt::sweepAny(scene, geometry, pose, unitDir, distance, queryFlags, hit);
-            //           }))
-            // .function("sweepSingle",
-            //           optional_override([](const PxScene &scene, const PxGeometry &\, const PxTransform &pose,
-            //                                const PxVec3 &unitDir, const PxReal distance, PxSceneQueryFlags outputFlags,
-            //                                PxSweepHit &hit) {
-            //               return PxSceneQueryExt::sweepSingle(scene, geometry, pose, unitDir, distance, outputFlags,
-            //                                                   hit);
-            //           }))
+            .function("sweep", &PxScene::sweep, allow_raw_pointers())
+            .function("sweepAny",
+                      optional_override([](const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose,
+                                           const PxVec3 &unitDir, const PxReal distance, PxU32 filterGroup, PxU32 filterMask, PxReal inflation
+                                           ) {
+                            std::vector <LayaQuaryResult> quaryResults;
+                            shapeCastAll(scene, geometry, pose, unitDir, distance, filterGroup, filterMask, quaryResults, inflation);
+                            return quaryResults;
+                      }))
+            .function("sweepSingle",
+                      optional_override([](const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose,
+                                           const PxVec3 &unitDir, const PxReal distance, PxU32 filterGroup, PxU32 filterMask, PxReal inflation 
+                                           ) {
+                            LayaQuaryResult quaryResult;
+                            shapeCastClosest(scene, geometry, pose, unitDir, distance, filterGroup, filterMask, quaryResult, inflation);
+                            return quaryResult;
+                      }))
             .function("createControllerManager",
                       optional_override([](PxScene &scene) { return PxCreateControllerManager(scene); }),
                       allow_raw_pointers());  // ✅

@@ -98,4 +98,5 @@ EMSCRIPTEN_BINDINGS(physx_math) {
     register_vector<LayaTriggerInfo>("Vector_PxTriggerPair");
     //register_vector<PxActor>("Vector_PxActor");
     register_vector<LayaContactPairInfo>("Vector_PxContactPairInfo");
+    register_vector<LayaQuaryResult>("Vector_LayaQuaryResult");
 }

@@ -26,15 +26,15 @@ public:
 	}
 }queryFilterCallBack;
 
-bool raycastClosest(const PxScene& Scene, const PxVec3& ori, const PxVec3& dir, PxU32 filterGroup,LayaQuaryResult &quaryResult) {
+bool raycastClosest(const PxScene& Scene, const PxVec3& ori, const PxVec3& dir, PxU32 distance,PxU32 filterGroup, PxU32 filterMask,LayaQuaryResult &quaryResult) {
 	PxRaycastBuffer hitBuffer;                 // [out] Raycast results
 	//PxHitFlags
 	PxHitFlags hitFlag = PxHitFlag::eDEFAULT|PxHitFlag::eANY_HIT;
 	//PxQueryFilterData
 	PxQueryFlags flags = PxQueryFlag::eANY_HIT | PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER;
-	PxQueryFilterData FilterDataSt(PxFilterData(filterGroup,0,0,0), flags);
+	PxQueryFilterData FilterDataSt(PxFilterData(filterGroup,filterMask,0,0), flags);
 
-	bool hitResult = Scene.raycast(ori, dir, 10000000, hitBuffer, hitFlag,FilterDataSt,&queryFilterCallBack);
+	bool hitResult = Scene.raycast(ori, dir, distance, hitBuffer, hitFlag,FilterDataSt,&queryFilterCallBack);
 	quaryResult.Quary = hitResult;
     if (hitResult) {
 		//printf("rayCast Cloest\n");
@@ -46,6 +46,87 @@ bool raycastClosest(const PxScene& Scene, const PxVec3& ori, const PxVec3& dir, 
 	}
 	return hitResult;
 };
+
+
+bool raycastAllHits(const PxScene& Scene, const PxVec3& ori, const PxVec3& dir, PxU32 distance, PxU32 filterGroup, PxU32 filterMask,std::vector<LayaQuaryResult> &quaryResults) {
+	PxRaycastHit* hitArray = new PxRaycastHit[1024];
+	PxRaycastBuffer hitBuffer(hitArray, 1024);                 // [out] Raycast results
+	
+	//PxHitFlags
+	PxHitFlags hitFlag = PxHitFlag::eDEFAULT;
+	//PxQueryFilterData
+	PxQueryFilterData FilterDataSt;
+	FilterDataSt.data = PxFilterData(filterGroup, filterMask, 0, 0);
+	FilterDataSt.flags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC | PxQueryFlag::ePREFILTER | PxQueryFlag::eNO_BLOCK;
+	bool hitResult = Scene.raycast(ori, dir, distance, hitBuffer, hitFlag,FilterDataSt,&queryFilterCallBack);
+    if (hitResult) {
+		PxU32 nHits = hitBuffer.getNbAnyHits();
+		// printf("get nNBAnyhits %d\n", nHits);
+		// PxU32 nbTouches = hitBuffer.nbTouches;
+		// printf("get nbTouches %d\n", nbTouches);
+		for(PxU32 i = 0;i < nHits; i++){
+			PxRaycastHit hit = hitBuffer.getAnyHit(i);
+			// printf("rayCast anyHit Position %f,%f,%f\n", hit.position.x, hit.position.y, hit.position.z);
+			LayaQuaryResult quaryRes;
+	        quaryRes.position = hit.position;
+    	    quaryRes.normal = hit.normal;
+        	quaryRes.ShapeUUID = getUUID(hit.shape);
+        	quaryRes.ActorUUID = getActorUUID(hit.actor);			
+			quaryResults.push_back(quaryRes);
+		}
+	}
+	delete[] hitArray;
+	return hitResult;
+};
+
+bool shapeCastClosest(const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose, const PxVec3 &unitDir, const PxReal distance, PxU32 filterGroup, PxU32 filterMask, LayaQuaryResult &queryResult, PxReal inflation) {
+    PxHitFlags outputFlags = PxHitFlag::eANY_HIT | PxHitFlag::eDEFAULT; // 返回第一个hit目标
+    PxSceneQueryFilterData filterData(PxFilterData(filterGroup, filterMask, 0, 0), PxQueryFlag::eANY_HIT | PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER);
+    PxSceneQueryFilterCallback* filterCall = nullptr; // 初始化指针
+    const PxSceneQueryCache* cache = nullptr; // 初始化指针
+    PxSweepBuffer buf;
+
+    bool hasHit = scene.sweep(geometry, pose, unitDir, distance, buf, outputFlags, filterData, filterCall, cache, inflation);
+
+    if (hasHit && buf.hasBlock) {
+        // printf("    ====  hit shape ====    ");
+        queryResult.Quary = buf.hasBlock;
+        PxSweepHit hit = buf.block;
+        queryResult.position = hit.position;
+        queryResult.normal = hit.normal;
+        queryResult.ShapeUUID = getUUID(hit.shape);
+        queryResult.ActorUUID = getActorUUID(hit.actor);
+    }
+
+    return buf.hasBlock;
+}
+
+bool shapeCastAll(const PxScene &scene, const PxGeometry &geometry, const PxTransform &pose, const PxVec3 &unitDir, const PxReal distance, PxU32 filterGroup, PxU32 filterMask, std::vector<LayaQuaryResult> &quaryResults, PxReal inflation){
+	PxSweepHit hits[1024];
+    PxSweepBuffer buf(hits, 1024);
+	PxHitFlags outputFlags = PxHitFlag::eMESH_ANY | PxHitFlag::ePRECISE_SWEEP; // 任何mesh与所有sweep
+    PxSceneQueryFilterData filterData(PxFilterData(filterGroup, filterMask, 0, 0), PxQueryFlag::eNO_BLOCK | PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER);
+    PxSceneQueryFilterCallback* filterCall = nullptr; // 初始化指针
+    const PxSceneQueryCache* cache = nullptr; // 初始化指针
+
+    bool hasHit = scene.sweep(geometry, pose, unitDir, distance, buf, outputFlags, filterData, filterCall, cache, inflation);
+
+    if (hasHit) {
+		PxU32 nHits = buf.getNbAnyHits();
+		for(PxU32 i = 0;i < nHits; i++){
+			PxSweepHit hit = buf.getAnyHit(i);
+			// printf("rayCast anyHit Position %f,%f,%f\n", hit.position.x, hit.position.y, hit.position.z);
+			LayaQuaryResult quaryRes;
+	        quaryRes.position = hit.position;
+    	    quaryRes.normal = hit.normal;
+        	quaryRes.ShapeUUID = getUUID(hit.shape);
+        	quaryRes.ActorUUID = getActorUUID(hit.actor);			
+			quaryResults.push_back(quaryRes);
+		}
+    }
+    return buf.hasBlock;
+}
+
 
 bool raycastAnyHit(const PxScene& Scene, const PxVec3& t, const PxVec3& velocity, const int filterGroup) {
 	/*UserCallback cb;
